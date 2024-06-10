@@ -73,9 +73,9 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.hrmsapp"
+    namespace "com.chatpoint"
     defaultConfig {
-        applicationId "com.hrmsapp"
+        applicationId "com.chatpoint"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

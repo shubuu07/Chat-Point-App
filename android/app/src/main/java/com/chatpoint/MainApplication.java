@@ -1,4 +1,4 @@
-package com.hrmsapp;
+package com.chatpoint;
 
 import android.app.Application;
 import com.facebook.react.PackageList;
