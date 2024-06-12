@@ -41,3 +41,7 @@ Channel Partner React Native is a mobile application that allows to E-commers ap
 ## Assests Linking commands ( Fonts)
 
 - npx react-native-asset
+
+## gradlew clean commands
+cd android && ./gradlew clean
+- 

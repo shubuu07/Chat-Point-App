@@ -1,12 +1,10 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+import { Text } from "react-native";
+import { Hp } from "../../constants/theme";
 
-const TextError = () => {
+export default function TextError({ title }) {
     return (
-        <View>
-            <Text>TextError</Text>
-        </View>
+        <Text type="error" className="text-red-500 m-2 mb-0 font-ftSemi" style={{ fontSize: Hp(1.7) }}>
+            {title}
+        </Text>
     )
 }
-
-export default TextError

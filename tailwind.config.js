@@ -15,7 +15,7 @@ module.exports = {
         ftDark: ['Figtree-ExtraBold'],
       },
       backgroundColor: {
-        primary: '#F97316',
+        primary: '#2563eb',
         secondary: 'rgb(252, 124, 59)',
         'light-black': '#162522',
         'slate1': '#eff2fa', // Add the bg-light-white" class
@@ -23,7 +23,7 @@ module.exports = {
         'light-dark': '#9ca3af',
       },
       textColor: {
-        primary: '#F97316',
+        primary: '#2563eb',
         'light-black': '#162522',
         'light-white': '#F9F9F9', // Add the bg-light-white" class
         'light-white1': '#ECEDF1',

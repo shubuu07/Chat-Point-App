@@ -3,7 +3,7 @@ import { useColorScheme } from "nativewind";
 
 export const { colorScheme } = useColorScheme();
 export const COLORS = {
-    primary: '#F97316',
+    primary: '#2563eb',
     secondary: 'rgb(252, 124, 59)',
     white: '#FFF',
     slateGray: '#eff2fa',

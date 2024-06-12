@@ -35,8 +35,6 @@
 			</dict>
 		</dict>
 	</dict>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -51,6 +49,18 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>App reequired access for media library to user to upload video or images.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>App requires Camera Access to capture a photo for user profile picture</string>
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string>App reequired access for media library to user to upload video or images.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Location is needed to fetch nearby facilities</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Location is needed to fetch nearby facilities</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>App requires Library Access to select a photo for user profile picture</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Figtree-Bold.ttf</string>
