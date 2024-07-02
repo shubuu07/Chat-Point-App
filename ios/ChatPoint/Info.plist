@@ -35,24 +35,12 @@
 			</dict>
 		</dict>
 	</dict>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
-	<key>UIRequiredDeviceCapabilities</key>
-	<array>
-		<string>armv7</string>
-	</array>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<false/>
 	<key>NSAppleMusicUsageDescription</key>
 	<string>App reequired access for media library to user to upload video or images.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>App requires Camera Access to capture a photo for user profile picture</string>
+	<key>NSContactsUsageDescription</key>
+	<string>This app requires access to your contacts to connect you with your friends and family.</string>
 	<key>NSDownloadsFolderUsageDescription</key>
 	<string>App reequired access for media library to user to upload video or images.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
@@ -69,5 +57,19 @@
 		<string>Figtree-Medium.ttf</string>
 		<string>Figtree-SemiBold.ttf</string>
 	</array>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>armv7</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
 </dict>
 </plist>

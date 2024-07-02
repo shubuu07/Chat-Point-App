@@ -1,20 +1,20 @@
-import { View, Text, TouchableOpacity, TextInput, StatusBar } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, StatusBar } from 'react-native';
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context'
-import FastImage from 'react-native-fast-image'
-import images from '../../constants/images'
 import { COLORS, Hp } from '../../constants/theme';
 import ButtonFill from '../../components/Button/ButtonFill'
 import { Controller, useForm } from 'react-hook-form'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import TextError from '../../components/ErrorComponent/TextError';
 import { ArrowLeft, Eye, EyeSlash } from 'phosphor-react-native';
+import { ragisterNewUser } from '../../utils/api';
+import { snackbarToast } from '../../Helper/PriceFormater';
 
 const RegistrationScreen = ({ navigation }) => {
 
-    const { handleSubmit, register, reset,
-        control, watch, formState: { errors } } = useForm();
+    const { handleSubmit, register, reset, control, watch, formState: { errors } } = useForm();
     const [togglePass, settogglePass] = useState(true);
+    const [loader, setLoader] = useState(false);
 
     //====================== Custom validation function for email =============================
 
@@ -49,8 +49,28 @@ const RegistrationScreen = ({ navigation }) => {
     };
 
 
-    const onSubmit = (data) => {
-        console.log(data)
+    const onSubmit = async (data) => {
+        try {
+            setLoader(true)
+            await ragisterNewUser(data).then(res => {
+                if (res?.status === "success") {
+                    setLoader(false)
+                    reset()
+                    snackbarToast({ text: res?.message, type: "success" })
+                    navigation.navigate('Login')
+                } else {
+                    setLoader(false)
+                    snackbarToast({ text: res?.message, type: "error" })
+                }
+            })
+        } catch (error) {
+            console.log("🚀 ~ file: RegistrationScreen.jsx:56 ~ onSubmit ~ error:", error)
+            setLoader(false)
+            reset()
+            snackbarToast({ text: error?.message, type: "error" })
+        } finally {
+            setLoader(false)
+        }
     }
 
     return (
@@ -179,7 +199,7 @@ const RegistrationScreen = ({ navigation }) => {
                                 name="password"
                                 render={({ field }) => (
                                     <TextInput
-                                        className='flex-1'
+                                        className=' font-ftSemi text-black flex-1'
                                         placeholder="••••••••••••"
                                         maxLength={30}
                                         secureTextEntry={togglePass}
@@ -202,7 +222,7 @@ const RegistrationScreen = ({ navigation }) => {
                     </View>
                 </View>
                 <View className='bg-white p-3 px-4 ios:pb-0 ' >
-                    <ButtonFill onPress={handleSubmit(onSubmit)} title="Register" iosStyle={true} />
+                    <ButtonFill onPress={handleSubmit(onSubmit)} title="Register" iosStyle={true} loader={loader} />
                     <View className='flex-row items-center justify-center my-2.5'>
                         <TouchableOpacity onPress={() => navigation.goBack()} className="flex-row items-center pb-4" activeOpacity={0.9}>
                             <Text className="text-center text-slate-400  font-ftSemi" style={{ fontSize: Hp(2) }}>You don't have an account? </Text>

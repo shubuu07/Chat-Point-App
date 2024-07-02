@@ -9,12 +9,18 @@ import { Controller, useForm } from 'react-hook-form'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import TextError from '../../components/ErrorComponent/TextError';
 import { Eye, EyeSlash } from 'iconsax-react-native'
+import { snackbarToast } from '../../Helper/PriceFormater';
+import { loginUser } from '../../utils/api';
+import { useDispatch } from 'react-redux';
+import { setUserDetails } from '../../Redux/slice/userSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = ({ navigation }) => {
 
-    const { handleSubmit, register, reset,
-        control, watch, formState: { errors } } = useForm();
+    const { handleSubmit, register, reset, control, watch, formState: { errors } } = useForm();
     const [togglePass, settogglePass] = useState(true);
+    const [loader, setLoader] = useState(false);
+    const dispatch = useDispatch()
 
     //====================== Custom validation function for email =============================
     const validateEmail = (value) => {
@@ -33,8 +39,30 @@ const LoginScreen = ({ navigation }) => {
     };
 
 
-    const onSubmit = (data) => {
-        console.log(data)
+    const onSubmit = async (data) => {
+        try {
+            setLoader(true)
+            await loginUser(data).then(async res => {
+                console.log("🚀 ~ file: LoginScreen.jsx:46 ~ awaitloginUser ~ res:", res?.data)
+                if (res?.status === "success") {
+                    dispatch(setUserDetails(res?.data))
+                    snackbarToast({ text: "Login Successfully", type: "success" })
+                    await AsyncStorage.setItem('@token', res?.token);
+                    setLoader(false)
+                    navigation.replace('Home')
+                } else {
+                    setLoader(false)
+                    snackbarToast({ text: res?.message, type: "error" })
+                }
+            })
+        } catch (error) {
+            console.log("🚀 ~ file: RegistrationScreen.jsx:56 ~ onSubmit ~ error:", error)
+            setLoader(false)
+            snackbarToast({ text: error?.message, type: "error" })
+        } finally {
+            setLoader(false)
+            reset()
+        }
     }
 
     return (
@@ -98,7 +126,7 @@ const LoginScreen = ({ navigation }) => {
                                     name="password"
                                     render={({ field }) => (
                                         <TextInput
-                                            className='flex-1'
+                                            className='flex-1 font-ftSemi  text-black'
                                             placeholder="••••••••••••"
                                             maxLength={30}
                                             secureTextEntry={togglePass}
@@ -121,7 +149,7 @@ const LoginScreen = ({ navigation }) => {
                         </View>
                     </View>
                     <View className='bg-white px-4 ios:pb-0 ' >
-                        <ButtonFill onPress={handleSubmit(onSubmit)} title="Save" iosStyle={true} />
+                        <ButtonFill onPress={handleSubmit(onSubmit)} title="Save" iosStyle={true} loader={loader} />
                     </View>
                     <View className='flex-row items-center justify-center ios:my-1.5'>
                         <TouchableOpacity onPress={() => navigation.navigate("Register")} className="flex-row items-center pb-4" activeOpacity={0.9}>

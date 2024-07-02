@@ -1,6 +1,5 @@
-import { View, StatusBar, Text, Image } from 'react-native';
+import { View, StatusBar, Image } from 'react-native';
 import React from 'react';
-import * as Animatable from 'react-native-animatable';
 import images from '../../constants/images';
 import { Hp } from '../../constants/theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -10,10 +9,9 @@ export default function SplashScreen({ navigation }) {
 
     // ===================== Login In Check =================
     const loginInCheck = async () => {
-        const data = await AsyncStorage.getItem('@storage_Key');
+        const token = await AsyncStorage.getItem('@token');
         const onBoarding = await AsyncStorage.getItem('@onBoarding');
-        if (data) {
-            getCharges();
+        if (token) {
             navigation.replace('Home')
         } else if (onBoarding) {
             navigation.replace('Login')
@@ -25,7 +23,7 @@ export default function SplashScreen({ navigation }) {
     React.useEffect(() => {
         setTimeout(() => {
             loginInCheck()
-        }, 2000);
+        }, 500);
     }, [])
 
     return (

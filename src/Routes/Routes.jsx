@@ -6,6 +6,7 @@ import SplachScreen from '../screens/Auth/SplachScreen';
 import LoginScreen from '../screens/Auth/LoginScreen';
 import RegistrationScreen from '../screens/Auth/RegistrationScreen';
 import ChatScreen from '../screens/Main/HomeStack/ChatScreen';
+import ContactList from '../screens/Main/HomeStack/ContactList';
 
 const Routes = () => {
 
@@ -19,7 +20,7 @@ const Routes = () => {
                 animationDuration: 300,
                 animationTypeForReplace: 'push',
                 animationEnabled: true,
-            }} initialRouteName="Home">
+            }}>
 
                 {/* ==================== AUTH STACK ================== */}
                 <Stack.Screen name="Splach" component={SplachScreen} />
@@ -30,6 +31,7 @@ const Routes = () => {
                 {/* ==================== MAIN STACK ================== */}
                 <Stack.Screen name="Home" component={HomeScreen} />
                 <Stack.Screen name="Chat" component={ChatScreen} />
+                <Stack.Screen name="Add_Chat" component={ContactList} />
 
 
             </Stack.Navigator>

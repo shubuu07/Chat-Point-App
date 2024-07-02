@@ -1,16 +1,24 @@
-import { View, Text, StatusBar, TouchableOpacity, FlatList, Platform } from 'react-native'
-import React from 'react'
+import { View, Text, StatusBar, TouchableOpacity, FlatList, Platform, Alert, TextInput } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { COLORS, Hp, Wp } from '../../../constants/theme'
-import { ElementEqual, SearchNormal } from 'iconsax-react-native'
-import FastImage from 'react-native-fast-image'
-import DashedLine from '../../../Helper/DashedLine';
-import { Check, Checks, Plus } from 'phosphor-react-native'
-import { useNavigation } from '@react-navigation/native'
-import moment from 'moment'
+import { COLORS, Hp } from '../../../constants/theme';
+import { Edit, ElementEqual, SearchNormal, SearchStatus } from 'iconsax-react-native'
+import { Plus, Power } from 'phosphor-react-native';
+import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native'
 import InstaStory from 'react-native-insta-story';
+import ChatHorizontalCard from '../../../components/ChatCom/ChatHorizontalCard';
+import { useDispatch, useSelector } from 'react-redux';
+import React, { useCallback, useEffect } from 'react';
+import { myChats } from '../../../utils/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setUserDetails } from '../../../Redux/slice/userSlice';
+import EmptyList from '../../../components/ErrorComponent/EmptyList';
+import socketServices from '../../../utils/sockets/sockertService';
 
 const HomeScreen = () => {
+    const user = useSelector(state => state.user.details)
+    React.useEffect(() => {
+        socketServices.initialzeSocekt(user._id)
+    }, []);
     return (
         <SafeAreaView edges={['right', 'top', 'left']} className="flex-1 bg-blue-600">
             <StatusBar barStyle="light-content" backgroundColor="#2563eb" animated={true} />
@@ -21,17 +29,30 @@ const HomeScreen = () => {
 }
 
 const Header = () => {
+    const navigation = useNavigation()
+    const user = useSelector(state => state.user.details)
+    const dispatch = useDispatch();
+
+    const onLogout = async () => {
+        dispatch(setUserDetails({}));
+        await AsyncStorage.removeItem('@token');
+        if (Platform.OS === "android") {
+            navigation.replace('Login');
+        } else {
+            navigation.navigate('Login');
+        }
+    }
+
     return (
-        <View className='py-4 pt-2.5 bg-blue-600' style={{ height: Platform.OS === 'ios' ? Hp(26) : Hp(27) }}>
+        <View className='py-4 pt-5 bg-blue-600 space-y-5' style={{ height: Platform.OS === 'ios' ? Hp(22) : Hp(27) }}>
             <View className='flex-row items-center justify-between px-4' >
-                <Text className='text-white font-ftMed' style={{ fontSize: Hp(2.6) }}>Hii, <Text className="font-ftBold">Shubuu!</Text></Text>
-                <TouchableOpacity className='p-3 bg-white/20 rounded-full'>
-                    <ElementEqual size={Hp(3)} className='text-white' variant='TwoTone' />
-                </TouchableOpacity>
-            </View>
-            <View className='px-4' >
-                <Text className='text-white font-ftMed' style={{ fontSize: Hp(2) }}>You Recevied</Text>
-                <Text className='text-white font-ftSemi underline' style={{ fontSize: Hp(3.2) }}>48 Messages</Text>
+                <Text className='text-white font-ftBold capitalize' style={{ fontSize: Hp(3.2) }}>Hi, {user.username}👋🏻</Text>
+                <View className='flex-row items-center space-x-3' >
+                    <TouchableOpacity onPress={onLogout} className='flex-row items-center space-x-3'>
+                        <Edit size={Hp(2.8)} className='text-white' />
+                        <Text className='text-white font-ftBold' style={{ fontSize: Hp(2.2) }}>New</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
             <StatusBox />
         </View>
@@ -39,61 +60,88 @@ const Header = () => {
 }
 
 const ChatBody = () => {
+    const userData = useSelector(state => state.user.details)
+    const [chatList, setChatList] = React.useState([]);
+    const [loader, setLoader] = React.useState(false);
+    const isFocus = useIsFocused();
+
+    useEffect(() => {
+        getAllChats();
+    }, [isFocus]);
+    const getAllChats = () => {
+        setLoader(true);
+        myChats().then((res) => {
+            console.log("🚀 ~ file: HomeScreen.jsx:149 ~ .then ~ res:", res)
+            setLoader(false);
+            setChatList(res?.data)
+        })
+            .catch((error) => {
+                setLoader(false);
+                console.log(error);
+            });
+    };
+
+
+    useFocusEffect(
+        React.useCallback(() => {
+
+            setTimeout(() => {
+                socketServices.emit("join_chat", userData?._id)
+
+                socketServices.on("new_chat", (value) => {
+                    setChatList(prev => {
+                        const updatedList = prev.filter(item => item?._id !== value?._id);
+                        return [value, ...updatedList];
+                    });
+                })
+
+                return () => {
+                    socketServices.emit('leave_chat', userData?._id)
+                    socketServices.removeListener("new_chat")
+                }
+            }, 100);
+        }, [])
+    );
+
+
     return (
-        <View className='flex-1 bg-white rounded-t-[28px] pt-3' >
-            <FlatList
-                ListHeaderComponent={<View className='px-4 pr-4 flex-row items-center' >
-                    <Text className='text-black font-ftBold flex-1' style={{ fontSize: Hp(2.8) }}>Chats</Text>
-                    <TouchableOpacity className='p-2.5 bg-slate1 rounded-full'>
-                        <SearchNormal size={Hp(3.2)} className='text-black' variant='TwoTone' />
-                    </TouchableOpacity>
-                </View>}
-                className="rounded-t-[28px]"
-                data={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
-                renderItem={({ item }) => <ChatHorizontalCard />}
-                keyExtractor={item => item}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: Hp(4), }}
-            />
+        <View className='flex-1 bg-white rounded-t-[28px] pt-4' >
+            {
+                chatList?.length == 0 ? <EmptyList text={"No chat history available"} text2={"Create your first conversation today and connect with others!"} /> : <FlatList
+                    ListHeaderComponent={<View className="px-2.5">
+                        <View className='bg-slate1 rounded-full flex-row items-center px-3 py-0.5 ios:py-4 space-x-2.5' >
+                            <SearchStatus size={Hp(3)} className="text-black" variant="TwoTone" />
+                            <TextInput
+                                // ref={inputRef}
+                                className="text-black  flex-1 font-intSemi"
+                                placeholder="Search Location..."
+                                autoCapitalize="none"
+                                autoComplete='off'
+                                autoCorrect={false}
+                                style={{ fontSize: Hp(2) }}
+                                contentStyle={{ letterSpacing: 0 }}
+                                cursorColor={COLORS.primary}
+                                keyboardType='default'
+                                placeholderTextColor="#64748B"
+                                returnKeyType='search'
+                            // onChangeText={handleSearch}
+                            />
+                            {/* {querySet?.length > 0 && <TouchableOpacity onPress={() => { setLoaction([]), inputRef.current.clear(), setQuerySet("") }} activeOpacity={.8} >
+                            <CloseCircle variant='Bold' size={Hp(3.5)} className="text-slate-300" />
+                        </TouchableOpacity>} */}
+                        </View>
+                    </View>}
+                    className="rounded-t-[28px]"
+                    data={chatList}
+                    renderItem={({ item }) => <ChatHorizontalCard item={item} />}
+                    keyExtractor={item => item}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingBottom: Hp(4), }}
+                />
+            }
+
         </View>
 
-    )
-}
-
-const ChatHorizontalCard = () => {
-    const navigation = useNavigation()
-
-    // ===================== Render time =================
-    const formatTimestamp = t => moment().isSame(t = moment(t), 'day') ? t.format('h:mm A') :
-        moment().subtract(1, 'days').isSame(t, 'day') ? 'Yesterday' :
-            moment().isSame(t, 'week') ? t.format('dddd') : t.format('DD/MM/YYYY');
-
-
-    return (
-        <TouchableOpacity onPress={() => navigation.navigate('Chat')} activeOpacity={0.8} className='px-3 py-3 space-y-2' >
-            <View className='flex-row items-center space-x-2' >
-                <View className='relative' >
-                    <FastImage source={{ uri: 'https://avatar.iran.liara.run/public' }} style={{ width: Hp(7), height: Hp(7), borderRadius: Wp(50), borderWidth: 2, borderColor: 'white' }} />
-                    <View className='absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white' />
-                </View>
-                <View className='flex-row items-center pr-9 space-y-1' >
-                    <View className='space-y-0.5 flex-1'>
-                        <Text numberOfLines={1} className='text-slate-800 font-ftBold' style={{ fontSize: Hp(2.3) }}>Shubham</Text>
-                        <Text numberOfLines={1} className='text-slate-500 font-ftMed' style={{ fontSize: Hp(1.8) }}>lorem ipsum dolor jjdal adjj sdaksjd kjaskdj ka ajsd jasdkasjk</Text>
-                    </View>
-                    <View className='space-y-1.5 pl-2 pr-7'>
-                        <Text numberOfLines={1} className='text-slate-500 font-ftMed' style={{ fontSize: Hp(1.6) }}>{formatTimestamp(new Date())}</Text>
-                        <View className='self-end' >
-                            <Checks size={Hp(2.4)} weight='bold' className='text-blue-600' />
-                            {/* <Check size={Hp(2.2)} weight='bold' className='text-400-600' /> */}
-                        </View>
-                        {/* <View className="bg-red-500 rounded-full justify-center  items-center self-end" style={{ width: Hp(3), height: Hp(3) }}>
-                            <Text className="text-white font-ftBold text-center" style={{ fontSize: 3 >= 10 ? Hp(1.3) : Hp(1.6) }} >3</Text>
-                        </View> */}
-                    </View>
-                </View>
-            </View>
-        </TouchableOpacity>
     )
 }
 
@@ -143,7 +191,7 @@ const StatusBox = () => {
         },
     ];
     return (
-        <View className='py-2' >
+        <View className='py-3 px-1' >
             <InstaStory
                 avatarFlatListProps={{
                     ListHeaderComponent:

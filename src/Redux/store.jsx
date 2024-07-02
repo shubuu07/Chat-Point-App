@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import thunk from "redux-thunk";
 
 const persistConfig = {
-    key: 'SendMessage',
+    key: 'ChatPointApp',
     version: 1,
     storage: AsyncStorage,
 };
