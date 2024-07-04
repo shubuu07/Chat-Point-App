@@ -85,6 +85,8 @@ const ChatComponent = ({ item, setUserStatus, setIsTyping, isTyping }) => {
             const response = await sendMessage(payload);
             const newMessage = {
                 ...response.data,
+                chatId: item?._id,
+                userId: receiverIds[0]?._id,
                 roomData: response.roomData,
                 user: {
                     _id: userData?._id,

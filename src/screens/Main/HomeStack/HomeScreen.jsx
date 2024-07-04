@@ -1,18 +1,24 @@
-import { View, Text, StatusBar, TouchableOpacity, FlatList, Platform, Alert, TextInput } from 'react-native'
+import { View, Text, StatusBar, TouchableOpacity, FlatList, Platform, Alert, TextInput, Button } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { COLORS, Hp } from '../../../constants/theme';
+import { COLORS, Hp, FONTS, Wp } from '../../../constants/theme';
 import { Edit, ElementEqual, SearchNormal, SearchStatus } from 'iconsax-react-native'
-import { Plus, Power } from 'phosphor-react-native';
+import { DotsThreeOutlineVertical, Plus, Power } from 'phosphor-react-native';
 import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native'
 import InstaStory from 'react-native-insta-story';
 import ChatHorizontalCard from '../../../components/ChatCom/ChatHorizontalCard';
 import { useDispatch, useSelector } from 'react-redux';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { myChats } from '../../../utils/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setUserDetails } from '../../../Redux/slice/userSlice';
 import EmptyList from '../../../components/ErrorComponent/EmptyList';
 import socketServices from '../../../utils/sockets/sockertService';
+import {
+    Menu,
+    MenuItem,
+    MenuDivider,
+    Position,
+} from 'react-native-enhanced-popup-menu';
 
 const HomeScreen = () => {
     const user = useSelector(state => state.user.details)
@@ -43,17 +49,37 @@ const Header = () => {
         }
     }
 
+    const elementRef = useRef(null);
+    let menuRef = null;
+
+    const setMenuRef = (ref) => (menuRef = ref);
+    const hideMenu = () => menuRef?.hide();
+    const showMenu = () => {
+        menuRef?.show(elementRef.current, Position.TOP_RIGHT);
+    };
+
+    const onPress = () => showMenu();
+
     return (
         <View className='py-4 pt-5 bg-blue-600 space-y-5' style={{ height: Platform.OS === 'ios' ? Hp(22) : Hp(27) }}>
             <View className='flex-row items-center justify-between px-4' >
                 <Text className='text-white font-ftBold capitalize' style={{ fontSize: Hp(3.2) }}>Hi, {user.username}👋🏻</Text>
-                <View className='flex-row items-center space-x-3' >
-                    <TouchableOpacity onPress={onLogout} className='flex-row items-center space-x-3'>
-                        <Edit size={Hp(2.8)} className='text-white' />
-                        <Text className='text-white font-ftBold' style={{ fontSize: Hp(2.2) }}>New</Text>
+                <View >
+                    <TouchableOpacity activeOpacity={.8} onPress={onPress} >
+                        <DotsThreeOutlineVertical size={Hp(3)} color='white' weight='fill' />
                     </TouchableOpacity>
+                    <View className="absolute top-2 right-1" ref={elementRef} >
+                    </View>
                 </View>
             </View>
+            <Menu ref={setMenuRef} style={{ backgroundColor: 'white', width: Wp(45), height: Hp(25), borderRadius: Hp(1.5) }}>
+                <MenuItem onPress={hideMenu} textStyle={{ color: 'black', ...FONTS.ftSemi, fontSize: Hp(2) }} style={{ marginVertical: Hp(0.2) }}>New Group</MenuItem>
+                <MenuItem onPress={hideMenu} textStyle={{ color: 'black', ...FONTS.ftSemi, fontSize: Hp(2) }} style={{ marginVertical: Hp(0.2) }}>Dark Mode</MenuItem>
+                <MenuItem onPress={hideMenu} textStyle={{ color: 'black', ...FONTS.ftSemi, fontSize: Hp(2) }} style={{ marginVertical: Hp(0.2) }}>
+                    Invite Friend
+                </MenuItem>
+                <MenuItem onPress={hideMenu} textStyle={{ color: 'black', ...FONTS.ftSemi, fontSize: Hp(2) }} style={{ marginVertical: Hp(0.2) }}>Setting</MenuItem>
+            </Menu>
             <StatusBox />
         </View>
     )
@@ -64,6 +90,7 @@ const ChatBody = () => {
     const [chatList, setChatList] = React.useState([]);
     const [loader, setLoader] = React.useState(false);
     const isFocus = useIsFocused();
+    const navigation = useNavigation();
 
     useEffect(() => {
         getAllChats();
@@ -89,6 +116,7 @@ const ChatBody = () => {
                 socketServices.emit("join_chat", userData?._id)
 
                 socketServices.on("new_chat", (value) => {
+                    console.log("🚀 ~ file: HomeScreen.jsx:119 ~ socketServices.on ~ value:", value)
                     setChatList(prev => {
                         const updatedList = prev.filter(item => item?._id !== value?._id);
                         return [value, ...updatedList];
@@ -102,6 +130,17 @@ const ChatBody = () => {
             }, 100);
         }, [])
     );
+
+    useEffect(() => {
+        const handleUserTyping = (userId) => setIsTyping(userId !== userData?._id);
+        const handleUserStopTyping = () => setIsTyping(false);
+        socketServices.on('user_typing', handleUserTyping);
+        socketServices.on('user_stop_typing', handleUserStopTyping);
+        return () => {
+            socketServices.removeListener('user_typing', handleUserTyping);
+            socketServices.removeListener('user_stop_typing', handleUserStopTyping);
+        };
+    }, [userData?._id]);
 
 
     return (
@@ -139,6 +178,9 @@ const ChatBody = () => {
                     contentContainerStyle={{ paddingBottom: Hp(4), }}
                 />
             }
+            <TouchableOpacity activeOpacity={.7} onPress={() => navigation.navigate('Add_Chat')} className='absolute bottom-16 right-6 bg-blue-500 p-3 rounded-full' style={{ shadowColor: '#aaa', shadowOffset: { width: 0, height: Platform.OS === 'ios' ? 5 : 2 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 10 }} >
+                <Plus size={Hp(4.5)} className="text-white" weight='bold' />
+            </TouchableOpacity>
 
         </View>
 
