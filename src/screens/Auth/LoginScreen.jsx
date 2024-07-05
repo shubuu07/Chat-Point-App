@@ -42,8 +42,9 @@ const LoginScreen = ({ navigation }) => {
     const onSubmit = async (data) => {
         try {
             setLoader(true)
-            await loginUser(data).then(async res => {
-                console.log("🚀 ~ file: LoginScreen.jsx:46 ~ awaitloginUser ~ res:", res?.data)
+            const fcmToken = await AsyncStorage.getItem('@fcm_token');
+            const payload = { ...data, fcmToken }
+            await loginUser(payload).then(async res => {
                 if (res?.status === "success") {
                     dispatch(setUserDetails(res?.data))
                     snackbarToast({ text: "Login Successfully", type: "success" })
@@ -61,7 +62,6 @@ const LoginScreen = ({ navigation }) => {
             snackbarToast({ text: error?.message, type: "error" })
         } finally {
             setLoader(false)
-            reset()
         }
     }
 

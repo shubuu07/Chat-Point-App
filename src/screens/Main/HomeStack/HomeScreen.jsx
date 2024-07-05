@@ -21,10 +21,6 @@ import {
 } from 'react-native-enhanced-popup-menu';
 
 const HomeScreen = () => {
-    const user = useSelector(state => state.user.details)
-    React.useEffect(() => {
-        socketServices.initialzeSocekt(user._id)
-    }, []);
     return (
         <SafeAreaView edges={['right', 'top', 'left']} className="flex-1 bg-blue-600">
             <StatusBar barStyle="light-content" backgroundColor="#2563eb" animated={true} />
@@ -63,7 +59,7 @@ const Header = () => {
     return (
         <View className='py-4 pt-5 bg-blue-600 space-y-5' style={{ height: Platform.OS === 'ios' ? Hp(22) : Hp(27) }}>
             <View className='flex-row items-center justify-between px-4' >
-                <Text className='text-white font-ftBold capitalize' style={{ fontSize: Hp(3.2) }}>Hi, {user.username}👋🏻</Text>
+                <Text onPress={onLogout} className='text-white font-ftBold capitalize' style={{ fontSize: Hp(3.2) }}>Hi, {user.username}👋🏻</Text>
                 <View >
                     <TouchableOpacity activeOpacity={.8} onPress={onPress} >
                         <DotsThreeOutlineVertical size={Hp(3)} color='white' weight='fill' />
@@ -72,7 +68,7 @@ const Header = () => {
                     </View>
                 </View>
             </View>
-            <Menu ref={setMenuRef} style={{ backgroundColor: 'white', width: Wp(45), height: Hp(25), borderRadius: Hp(1.5) }}>
+            <Menu ref={setMenuRef} style={{ backgroundColor: 'white', width: Wp(45), height: Hp(25), borderRadius: Hp(1.5) }} >
                 <MenuItem onPress={hideMenu} textStyle={{ color: 'black', ...FONTS.ftSemi, fontSize: Hp(2) }} style={{ marginVertical: Hp(0.2) }}>New Group</MenuItem>
                 <MenuItem onPress={hideMenu} textStyle={{ color: 'black', ...FONTS.ftSemi, fontSize: Hp(2) }} style={{ marginVertical: Hp(0.2) }}>Dark Mode</MenuItem>
                 <MenuItem onPress={hideMenu} textStyle={{ color: 'black', ...FONTS.ftSemi, fontSize: Hp(2) }} style={{ marginVertical: Hp(0.2) }}>
@@ -89,6 +85,7 @@ const ChatBody = () => {
     const userData = useSelector(state => state.user.details)
     const [chatList, setChatList] = React.useState([]);
     const [loader, setLoader] = React.useState(false);
+    const [isTyping, setIsTyping] = React.useState(false);
     const isFocus = useIsFocused();
     const navigation = useNavigation();
 
@@ -118,7 +115,7 @@ const ChatBody = () => {
                 socketServices.on("new_chat", (value) => {
                     console.log("🚀 ~ file: HomeScreen.jsx:119 ~ socketServices.on ~ value:", value)
                     setChatList(prev => {
-                        const updatedList = prev.filter(item => item?._id !== value?._id);
+                        const updatedList = prev?.filter(item => item?._id !== value?._id);
                         return [value, ...updatedList];
                     });
                 })
@@ -127,7 +124,7 @@ const ChatBody = () => {
                     socketServices.emit('leave_chat', userData?._id)
                     socketServices.removeListener("new_chat")
                 }
-            }, 100);
+            }, 500);
         }, [])
     );
 

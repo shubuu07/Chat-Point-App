@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "645260306483",
+    "project_id": "chatpointapp-fb92d",
+    "storage_bucket": "chatpointapp-fb92d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:645260306483:android:3207e34b602df4abbf1b46",
+        "android_client_info": {
+          "package_name": "com.chatpoint"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFYX_ZGV_TwVDMtbMjH2PDW8IPedOjUno"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
